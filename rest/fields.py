@@ -195,7 +195,7 @@ class DateTime(Field):
 
 class URL(Field):
   def __init__(self, value=None, validators=[], default=None):
-    from vistar.views.rest.validators import url
+    from rest.validators import url
     if url not in validators:
       validators.append(url)
     super(URL, self).__init__(value, validators, default)
