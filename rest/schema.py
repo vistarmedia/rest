@@ -1,5 +1,12 @@
 
 class Schema(object):
+  @classmethod
+  def combined_errors(self, *args):
+    errors = []
+    for schema in args:
+      errors.extend(schema._errors.items())
+    return dict(errors)
+
   def __init__(self, **kwargs):
     self._fields = self._get_fields()
     self._errors = {}
@@ -71,6 +78,9 @@ class Schema(object):
         rep[name] = field.get_simplified()
     rep['__namespace__'] = self.get_namespace()
     return rep
+
+  def dict(self):
+    return self._get()
 
   def _get_fields(self):
     fields = {}
