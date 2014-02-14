@@ -12,7 +12,6 @@ class Field(object):
     self.serialize = True
     self._validators = validators
     self._value = value
-    self._initial = value
     self._default = default
 
     self._has_get = hasattr(value, 'get')
@@ -79,9 +78,8 @@ class Field(object):
 
 class ReadOnly(Field):
   def __init__(self, *args, **kwargs):
-    super(ReadOnly, self).__init__(*args, **kwargs)
-
     self.quiet = kwargs.pop('quiet', False)
+    super(ReadOnly, self).__init__(*args, **kwargs)
 
   def set(self, value):
     current_value = self.get()

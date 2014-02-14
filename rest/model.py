@@ -1,3 +1,5 @@
+from copy import copy
+
 
 class Model(object):
   """
@@ -8,12 +10,17 @@ class Model(object):
     self._class  = cls
     self._fields = {}
     self._model  = None
+    self._inital = None
 
   def set(self, model):
+    self._initial = copy(model)
     self._model = model
 
   def get(self):
     return self._model
+
+  def get_initial(self):
+    return self._initial
 
   def __getattr__(self, name):
     if name.startswith('_'):

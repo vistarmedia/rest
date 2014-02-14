@@ -22,10 +22,10 @@ def number_range(min=None, max=None):
 
 def url(value):
   if value:
-    regex = r'^http(s)?://([^/:]+\.[a-z]{2,10}|"' \
+    regex = r'^http(s)?://([^/:]+\.[a-z]{2,10}|' \
       + r'([0-9]{1,3}\.){3}[0-9]{1,3})(:[0-9]+)?(\/.*)?$'
     if not re.match(regex, value):
-      return ['must be a valid URL']
+      return ['must be a valid HTTP URL']
 
 def multiple_choice(choices):
 
