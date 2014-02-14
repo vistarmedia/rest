@@ -1,7 +1,17 @@
-import simplejson as json
+import json
 
 from collections import defaultdict
+from decimal import Decimal
 from xml.etree import ElementTree
+
+
+# This class is for backwards compatability with Python 2.6
+# and can be removed whenever that is no longer necessary.
+class DecimalEncoder(json.JSONEncoder):
+  def default(self, obj):
+    if isinstance(obj, Decimal):
+      return float(obj)
+    return json.JSONEncoder.default(self, obj)
 
 
 class JsonEncoding(object):
@@ -16,7 +26,7 @@ class JsonEncoding(object):
 
   def encode(self, dct):
     cleaned = self._clean_namespace(dct)
-    return json.dumps(cleaned, use_decimal=True)
+    return json.dumps(cleaned, cls=DecimalEncoder)
 
   def _clean_namespace(self, el):
     if isinstance(el, list):
