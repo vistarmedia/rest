@@ -1,4 +1,4 @@
-import json
+import simplejson as json
 
 from collections import defaultdict
 from xml.etree import ElementTree
