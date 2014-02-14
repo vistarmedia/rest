@@ -10,7 +10,10 @@ setup(
   ],
 
   tests_require = [
-    'git+https://github.com/jarus/flask-testing.git@7bf34b039cb93b5447073c12243f9f4debc14a6c#egg=Flask-Testing',
     'nose          == 1.3.0',
+  ],
+
+  dependency_links=[
+    'git+https://github.com/jarus/flask-testing.git@7bf34b039cb93b5447073c12243f9f4debc14a6c#egg=Flask-Testing',
   ],
 )
