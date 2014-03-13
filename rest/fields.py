@@ -132,6 +132,17 @@ class Bool(Field):
     return True if value else False
 
 
+class StringBool(Field):
+  def coerce(self, value):
+    str_value = str(value).lower()
+    if str_value == 'true':
+      return True
+    if str_value == 'false':
+      return False
+
+    raise ValueError("Value must be 'true' or 'false'")
+
+
 class Int(Field):
   def coerce(self, value):
     if value == '':
