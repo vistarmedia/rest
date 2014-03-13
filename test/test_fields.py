@@ -64,6 +64,17 @@ class FieldTest(TestCase):
     self.assertTrue(fields.Bool().coerce({'is': 'ok'}))
     self.assertFalse(fields.Bool().coerce({}))
 
+  def test_string_boolean_coercion(self):
+    self.assertTrue(fields.StringBool().coerce('True'))
+    self.assertFalse(fields.StringBool().coerce('False'))
+
+    self.assertTrue(fields.StringBool().coerce('tRue'))
+    self.assertFalse(fields.StringBool().coerce('false'))
+
+  @raises(ValueError)
+  def test_string_boolean_coercion_empty_string(self):
+    self.assertTrue(fields.StringBool().coerce(''))
+
   def test_int_coercion(self):
     self.assertEquals(4, fields.Int().coerce('4'))
     self.assertEquals(0, fields.Int().coerce(''))
