@@ -2,7 +2,7 @@ from distutils.core import setup
 
 setup(
   name      = 'rest',
-  version   = '0.0.1',
+  version   = '0.0.2',
   packages  = ['rest'],
 
   install_requires = [

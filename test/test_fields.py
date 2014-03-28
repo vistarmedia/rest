@@ -1,3 +1,5 @@
+import locale
+
 from datetime import datetime
 from decimal import Decimal
 from unittest import TestCase
@@ -76,8 +78,16 @@ class FieldTest(TestCase):
     self.assertTrue(fields.StringBool().coerce(''))
 
   def test_int_coercion(self):
+    locale.setlocale(locale.LC_ALL, 'en_US.UTF8')
     self.assertEquals(4, fields.Int().coerce('4'))
     self.assertEquals(0, fields.Int().coerce(''))
+    self.assertEquals(1000000, fields.Int().coerce('1,000,000'))
+
+  def test_float_coercion(self):
+    locale.setlocale(locale.LC_ALL, 'en_US.UTF8')
+    self.assertEquals(4.02, fields.Float().coerce('4.02'))
+    self.assertEquals(0, fields.Float().coerce(''))
+    self.assertEquals(1000000.01, fields.Float().coerce('1,000,000.01'))
 
   def test_dollars_coercion(self):
     self.assertEquals(Decimal('1.10'), fields.Dollars().coerce('1.10'))

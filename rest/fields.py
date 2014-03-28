@@ -1,5 +1,8 @@
 from datetime import datetime
 from decimal import Decimal
+from locale import atof
+from locale import atoi
+
 
 class Field(object):
   """
@@ -148,7 +151,7 @@ class Int(Field):
     if value == '':
       value = '0'
     try:
-      return int(value)
+      return atoi(value)
     except:
       raise ValueError("Invalid integer")
 
@@ -158,7 +161,7 @@ class Float(Field):
     if value == '':
       value = '0.0'
     try:
-      return float(value)
+      return atof(value)
     except:
       raise ValueError("Invalid float")
 
