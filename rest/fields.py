@@ -151,7 +151,10 @@ class Int(Field):
     if value == '':
       value = '0'
     try:
-      return atoi(value)
+      if isinstance(value, basestring):
+        return atoi(value)
+      else:
+        return int(value)
     except:
       raise ValueError("Invalid integer")
 
@@ -161,7 +164,10 @@ class Float(Field):
     if value == '':
       value = '0.0'
     try:
-      return atof(value)
+      if isinstance(value, basestring):
+        return atof(value)
+      else:
+        return float(value)
     except:
       raise ValueError("Invalid float")
 
