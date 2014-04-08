@@ -126,3 +126,8 @@ class FieldTest(TestCase):
   def test_decimal_serialization(self):
     self.assertEquals('1.00', fields.Dollars().simplify(Decimal('1.00')))
     self.assertEquals('1.00', fields.Dollars().simplify(Decimal('1')))
+
+  def test_truthy_only_list(self):
+    list_with_some_falsies = ['', 'dogs', 'food', '', 'crime', None, 5]
+    self.assertEquals(4,
+        len(fields.TruthyOnlyList().coerce(list_with_some_falsies)))
