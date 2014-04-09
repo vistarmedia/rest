@@ -190,6 +190,11 @@ class List(Field):
     return list(value)
 
 
+class TruthyOnlyList(Field):
+  def coerce(self, value):
+    return [v for v in value if v]
+
+
 class Dict(Field):
   def coerce(self, value):
     return dict(value)
