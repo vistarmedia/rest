@@ -35,6 +35,21 @@ class TestSchema(TestCase):
     self.assertEquals(1, len(schema._errors))
     self.assertEquals(['is required'], schema._errors['name'])
 
+  def test_regex_validator(self):
+    class RegexSchema(rest.Schema):
+      zip_code = rest.String(validators=[
+        rest.regex('[0-9]{5}', 'not a valid Zip')
+      ])
+
+      state = rest.String(validators=[
+        rest.regex('[A-Z]{2}', 'not a valid State')
+      ])
+
+    schema = RegexSchema()
+    self.assertFalse(schema({'zip_code': 'BAD', 'state': 'PA'}))
+    self.assertEquals(1, len(schema._errors))
+    self.assertEquals(['not a valid Zip'], schema._errors['zip_code'])
+
   def test_serialized_set(self):
     schema = FriendSchema()
 
