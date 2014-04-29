@@ -27,6 +27,13 @@ def url(value):
     if not re.match(regex, value):
       return ['must be a valid HTTP URL']
 
+def regex(expr, msg):
+  def contains_regex(value):
+    if value and not re.search(expr, value):
+      return [msg]
+
+  return contains_regex
+
 def multiple_choice(choices):
 
   def assert_choice_in_choices(value):

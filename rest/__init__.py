@@ -27,6 +27,7 @@ from fields import WriteOnly
 from validators import multiple_choice
 from validators import nonempty
 from validators import number_range
+from validators import regex
 from validators import required
 from validators import url
 
