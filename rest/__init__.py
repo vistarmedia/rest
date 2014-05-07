@@ -1,6 +1,10 @@
+import csv
 import flask
 
+from exceptions import ValueError
+
 from flask import Response
+from flask import request
 from functools import wraps
 from werkzeug.wrappers import BaseResponse
 
@@ -62,6 +66,35 @@ def view(func):
 
     return _serialize(func(*args, **kwargs))
   return wrapped
+
+def csv_upload(schema):
+  """
+  validate each row of a CSV on upload - if a row doesn't pass validation, HTTP
+  400 with a body of the validation errors out of the rest schema
+
+  the generator object will be passed to the view function as the rows argument
+  and will return a rest.Schema for each row.  if nothing calls the generator,
+  no validation will occur
+  """
+  def check_schema(row, row_number):
+    csv_row_schema = schema(row_number=row_number)
+    if not csv_row_schema(row):
+      raise ValueError('CSV failed validation', csv_row_schema)
+    return csv_row_schema
+
+  def decorator(view):
+    @wraps(view)
+    def view_wrapper(*args, **kwargs):
+      body = request.files['file'].stream
+      rows = (check_schema(row, i) \
+          for i, row in enumerate(csv.DictReader(body), start=1))
+      try:
+        return view(rows, *args, **kwargs)
+      except ValueError as exc:
+        return error(exc.args[1])
+
+    return view_wrapper
+  return decorator
 
 def error(msg):
   codec = encoder(flask.request, 'errors')
