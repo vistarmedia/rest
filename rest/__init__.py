@@ -1,4 +1,4 @@
-import csv
+import unicodecsv as csv
 import flask
 
 from exceptions import ValueError

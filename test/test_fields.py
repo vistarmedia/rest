@@ -50,6 +50,10 @@ class FieldTest(TestCase):
     self.assertEquals('True', fields.String().coerce(True))
     self.assertEquals('None', fields.String().coerce(None))
 
+  def test_string_coercion_with_unicode(self):
+    self.assertEquals(u'H\xc3\xa4nsel',
+        fields.String().coerce(u'H\xc3\xa4nsel'))
+
   def test_boolean_coercion(self):
     self.assertTrue(fields.Bool().coerce(True))
     self.assertFalse(fields.Bool().coerce(False))
