@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 from StringIO import StringIO
 
 from flask import Flask
@@ -137,3 +138,21 @@ class TestCSVUpload(TestCase):
 
     for name in self.seen_dog_names:
       self.assertIn(name, expected_dog_names)
+
+  def test_csv_upload_with_unicode_body(self):
+    """
+    it should not raise an exception on receiving unicode chars
+    """
+    data = "dog_type,food,pounds\n" \
+      "foxes,cured meats,3200\n" \
+      "H\xc3\xa4nsel,pies,1500\n" \
+      "ni\xc3\xb1o,foods,43\n"
+
+    resp = self.client.post('/csv',
+      data={'file': (StringIO(data), 'test.csv')},
+      headers=self.csv_headers)
+
+    self.assert_status(resp, 201)
+    self.assertIn(u'Hänsel', self.seen_dog_names)
+    self.assertIn(u'niño', self.seen_dog_names)
+    self.assertIn(u'foxes', self.seen_dog_names)
