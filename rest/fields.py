@@ -116,7 +116,7 @@ class WriteOnce(Field):
 
 class String(Field):
   def coerce(self, value):
-    return str(value)
+    return unicode(value)
 
 
 class NoneString(Field):
