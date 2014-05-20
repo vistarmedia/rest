@@ -1,7 +1,5 @@
 import re
 
-from flask import g
-
 
 def required(value):
   if value is None:

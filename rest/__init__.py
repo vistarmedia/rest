@@ -1,5 +1,5 @@
-import csv
 import flask
+import unicodecsv as csv
 
 from exceptions import ValueError
 
