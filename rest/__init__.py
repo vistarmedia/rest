@@ -6,6 +6,7 @@ from exceptions import ValueError
 from flask import Response
 from flask import request
 from functools import wraps
+from StringIO import StringIO
 from werkzeug.wrappers import BaseResponse
 
 from schema import Schema
@@ -76,29 +77,87 @@ def view(func):
     return _serialize(func(*args, **kwargs))
   return wrapped
 
-def csv_upload(schema):
+def _check_csv_schema(schema, row, row_number):
+  csv_row_schema = schema(row_number=row_number)
+  if not csv_row_schema(row):
+    raise CsvValidationError('CSV failed validation', csv_row_schema)
+  return csv_row_schema
+
+def csv_upload(schema, fieldnames=None):
   """
   validate each row of a CSV on upload - if a row doesn't pass validation, HTTP
-  400 with a body of the validation errors out of the rest schema
+  400 with a body of the validation errors out of the rest schema.
+  CSV must either have a header or a sequence of fieldnames must be given
 
   the generator object will be passed to the view function as the rows argument
   and will return a rest.Schema for each row.  if nothing calls the generator,
   no validation will occur
   """
-  def check_schema(row, row_number):
-    csv_row_schema = schema(row_number=row_number)
-    if not csv_row_schema(row):
-      raise CsvValidationError('CSV failed validation', csv_row_schema)
-    return csv_row_schema
-
   def decorator(view):
     @wraps(view)
     def view_wrapper(*args, **kwargs):
       body = request.files['file'].stream
-      rows = (check_schema(row, i) \
-          for i, row in enumerate(csv.DictReader(body), start=1))
+      rows = (_check_csv_schema(schema, row, i) \
+          for i, row in enumerate(csv.DictReader(body, fieldnames=fieldnames),
+            start=1))
       try:
         return view(rows, *args, **kwargs)
+      except CsvValidationError as exc:
+        return error(exc.schema)
+
+    return view_wrapper
+  return decorator
+
+def json_csv_upload(fieldnames):
+  """
+  similar to `csv_upload`, but handle bodies like {"csv": "name,a,b\nhonk,c,d"}
+  a sequence of fieldnames must be given
+  will 400 if there is no "csv" key
+
+  doesn't perform validation, instead returns a generator in the "rows" argument
+  that yields:
+  - a dict (keys as fieldnames, values as CSV row values)
+  - a line number, 1-indexed
+  - list of basic validation errors (too many rows, too few rows) for that row
+  """
+  def csv_row(row, row_number):
+    errors          = []
+    obj             = {}
+    expected_length = len(fieldnames)
+    actual_length   = len(row)
+
+    if expected_length != actual_length:
+      errors.append("Expecting %s columns in row %s, got %s" % (expected_length,
+        row_number, actual_length,))
+
+    if not errors:
+      for index, key in enumerate(fieldnames):
+        obj[key] = row[index]
+
+    return (obj, row_number, errors)
+
+  def csv_reader(string):
+    csv_data   = StringIO(string)
+    csv_reader = csv.reader(csv_data)
+
+    for i, row in enumerate(csv_reader, start=1):
+      yield csv_row(row, i)
+
+  def decorator(wrapped):
+    @wraps(wrapped)
+    @view
+    def view_wrapper(*args, **kwargs):
+      body = kwargs.get('data')
+      if not body or not body.get('csv'):
+        return error({'client': ['"csv" key cannot be empty']})
+
+      csv_data = body.get('csv').encode('utf8')
+
+      kwargs['rows'] = ((row, line_num, errors) \
+          for row, line_num, errors in csv_reader(csv_data))
+
+      try:
+        return wrapped(*args, **kwargs)
       except CsvValidationError as exc:
         return error(exc.schema)
 

@@ -3,6 +3,7 @@ from StringIO import StringIO
 
 from flask import Flask
 from flask.ext.testing import TestCase
+from json import dumps
 from json import loads
 from nose.plugins.skip import SkipTest
 
@@ -74,6 +75,30 @@ class TestCSVUpload(TestCase):
         self.seen_dog_names.append(schema.dog_type.get())
       return rest.created({'csv': 'created'})
 
+    @self.app.route('/csv_with_fieldnames', methods=['POST'])
+    @rest.csv_upload(CSVSchema, fieldnames=('dog_type','food','pounds',))
+    def csv_with_fieldnames(rows):
+      for schema in rows:
+        self.seen_dog_names.append(schema.dog_type.get())
+      return rest.created({'csv': 'created'})
+
+    @self.app.route('/csv_json/<id_one>/<id_two>', methods=['POST'])
+    @rest.json_csv_upload(('dog_type','food','pounds',))
+    def csv_json(id_one, id_two, rows, data):
+      errors   = {}
+      response = []
+
+      for row, row_number, errors in rows:
+        if errors:
+          errors[row_number] = errors
+        else:
+          response.append(row)
+
+      if errors:
+        return rest.error(errors)
+      else:
+        return rest.created(response)
+
   def create_app(self):
     self.app = Flask('TestCSVUpload')
     return self.app
@@ -85,6 +110,22 @@ class TestCSVUpload(TestCase):
     resp = self.client.post('/csv', headers=self.csv_headers)
 
     self.assert400(resp)
+
+  def test_csv_upload_without_header(self):
+    """
+    it should 400 if it doesn't know which fields to use for rows
+    """
+    data = "great dane,cured meats,200\n" \
+      "shibe,doge food,20\n" \
+      "'strodog,kibble,65"
+
+    resp = self.client.post('/csv', data={
+      'file': (StringIO(data), 'test.csv')}, headers=self.csv_headers)
+
+    self.assert400(resp)
+    body = loads(resp.data)
+
+    self.assertIn('cannot be empty', body['food'])
 
   def test_csv_upload_with_invalid_data(self):
     """
@@ -141,7 +182,7 @@ class TestCSVUpload(TestCase):
 
   def test_csv_upload_with_unicode_body(self):
     """
-    it should not raise an exception on receiving unicode chars
+    it should be able to handle unicode characters
     """
     data = "dog_type,food,pounds\n" \
       "foxes,cured meats,3200\n" \
@@ -156,3 +197,127 @@ class TestCSVUpload(TestCase):
     self.assertIn(u'Hänsel', self.seen_dog_names)
     self.assertIn(u'niño', self.seen_dog_names)
     self.assertIn(u'foxes', self.seen_dog_names)
+
+  def test_json_csv_upload_with_no_csv_key(self):
+    headers = {
+      'content-type': 'text/json'
+    }
+
+    data = "foxes,cured meats,3200\n" \
+      "H\xc3\xa4nsel,pies,1500\n" \
+      "ni\xc3\xb1o,foods,43\n"
+
+    o = {
+      'this_key_isnt_called_csv': data
+    }
+
+    resp = self.client.post('/csv_json/h/f', data=dumps(o), headers=headers)
+    self.assert400(resp)
+
+    body = loads(resp.data)
+
+    self.assertIn('"csv" key cannot be empty', body['client'])
+
+  def test_json_csv_upload(self):
+    """
+    it should handle request bodies like {"csv": "name,a,b\nhonk,c,d"}
+    """
+    headers = {
+      'content-type': 'text/json'
+    }
+
+    data = "foxes,cured meats,3200\n" \
+      "H\xc3\xa4nsel,pies,1500\n" \
+      "ni\xc3\xb1o,foods,43\n"
+
+    o = {
+      'csv': data
+    }
+
+    resp = self.client.post('/csv_json/some_id/some_other',
+        data=dumps(o), headers=headers)
+    self.assert_status(resp, 201)
+
+    body = loads(resp.data)
+
+    names = [d.get('dog_type') for d in body]
+
+    self.assertIn(u'Hänsel', names)
+    self.assertIn(u'niño', names)
+    self.assertIn(u'foxes', names)
+
+  def test_json_csv_with_defined_fieldnames(self):
+    """
+    it should use the given fieldnames in making dicts for the schema
+    """
+    data = '''foxes,cured meats,3200\n''' \
+      '''geese,pies,1500\n''' \
+      '''pigs,errything,43\n''' \
+      '''"fast horses",race food,33\n''' \
+      '''"slow horses",grass food,33'''
+
+    o = {
+      'csv': unicode(data)
+    }
+
+    fieldnames = ('name','feed','pounds',)
+    @rest.json_csv_upload(fieldnames)
+    def test_using_defined_column_names(rows, data):
+      seen_keys = set()
+      seen_rows = []
+
+      for row, row_number, errors in rows:
+        seen_rows.append(row)
+        for k in row.keys():
+          seen_keys.add(k)
+
+      self.assertEqual(3, len(seen_keys))
+      self.assertIn('name', seen_keys)
+      self.assertIn('feed', seen_keys)
+      self.assertIn('pounds', seen_keys)
+
+      self.assertEquals('foxes', seen_rows[0].get('name'))
+      self.assertEquals('geese', seen_rows[1].get('name'))
+      self.assertEquals('pigs', seen_rows[2].get('name'))
+      self.assertEquals('fast horses', seen_rows[3].get('name'))
+      self.assertEquals('slow horses', seen_rows[4].get('name'))
+
+      self.assertEquals('cured meats', seen_rows[0].get('feed'))
+      self.assertEquals('pies', seen_rows[1].get('feed'))
+      self.assertEquals('errything', seen_rows[2].get('feed'))
+      self.assertEquals('race food', seen_rows[3].get('feed'))
+      self.assertEquals('grass food', seen_rows[4].get('feed'))
+
+      self.assertEquals('3200', seen_rows[0].get('pounds'))
+      self.assertEquals('1500', seen_rows[1].get('pounds'))
+      self.assertEquals('43', seen_rows[2].get('pounds'))
+      self.assertEquals('33', seen_rows[3].get('pounds'))
+      self.assertEquals('33', seen_rows[4].get('pounds'))
+
+    test_using_defined_column_names(data=o)
+
+  def test_json_csv_with_differing_fieldnames_and_row_lengths(self):
+    """
+    it should yield an errors list from the returned generator with a message
+    about the row length if too many or too few columns in data
+    """
+    data = '''foxes,cured meats,3200\n''' \
+      '''H\xc3\xa4nsel,pies,1500,5\n''' \
+      '''ni\xc3\xb1o,foods,43\n''' \
+      '''"quotes, mc",,33\n''' \
+      '''"quotes, mc",rt,33,honk,"honk"'''
+
+    o = {
+      'csv': data
+    }
+
+    @rest.json_csv_upload(('dog_name','food','pounds',))
+    def test_yielded_errors(rows, data):
+      collected_errors = []
+      for row, row_number, errors in rows:
+        collected_errors.append(errors)
+
+      self.assertIn('Expecting 3 columns in row 2, got 4', collected_errors[1])
+      self.assertIn('Expecting 3 columns in row 5, got 5', collected_errors[4])
+
+    test_yielded_errors(data=loads(dumps(o)))
