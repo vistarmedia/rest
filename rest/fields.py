@@ -115,7 +115,13 @@ class WriteOnce(Field):
 
 
 class String(Field):
+  def __init__(self, *args, **kwargs):
+    self.max_chars = kwargs.pop('max_chars', None)
+    super(String, self).__init__(*args, **kwargs)
+
   def coerce(self, value):
+    if self.max_chars:
+      return unicode(value)[:self.max_chars]
     return unicode(value)
 
 
