@@ -115,7 +115,13 @@ class WriteOnce(Field):
 
 
 class String(Field):
+  def __init__(self, *args, **kwargs):
+    self.trim_to = kwargs.pop('trim_to', None)
+    super(String, self).__init__(*args, **kwargs)
+
   def coerce(self, value):
+    if self.trim_to:
+      return unicode(value)[:self.trim_to]
     return unicode(value)
 
 
