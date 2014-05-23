@@ -54,8 +54,8 @@ class FieldTest(TestCase):
     self.assertEquals(u'H\xc3\xa4nsel',
         fields.String().coerce(u'H\xc3\xa4nsel'))
 
-  def test_string_coercion_with_max_chars(self):
-    self.assertEquals('19103', fields.String(max_chars=5).coerce('19103-1212'))
+  def test_string_coercion_with_trim_to(self):
+    self.assertEquals('19103', fields.String(trim_to=5).coerce('19103-1212'))
 
   def test_boolean_coercion(self):
     self.assertTrue(fields.Bool().coerce(True))

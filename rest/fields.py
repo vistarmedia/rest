@@ -116,12 +116,12 @@ class WriteOnce(Field):
 
 class String(Field):
   def __init__(self, *args, **kwargs):
-    self.max_chars = kwargs.pop('max_chars', None)
+    self.trim_to = kwargs.pop('trim_to', None)
     super(String, self).__init__(*args, **kwargs)
 
   def coerce(self, value):
-    if self.max_chars:
-      return unicode(value)[:self.max_chars]
+    if self.trim_to:
+      return unicode(value)[:self.trim_to]
     return unicode(value)
 
 
