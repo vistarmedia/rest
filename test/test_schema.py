@@ -35,6 +35,19 @@ class TestSchema(TestCase):
     self.assertEquals(1, len(schema._errors))
     self.assertEquals(['is required'], schema._errors['name'])
 
+  def test_length_validator(self):
+    class LengthSchema(rest.Schema):
+      min_field = rest.String(validators=[rest.length(min=4)])
+      max_field = rest.String(validators=[rest.length(max=2)])
+
+    schema = LengthSchema()
+    self.assertFalse(schema({'min_field': '123', 'max_field': '321'}))
+    self.assertEquals(2, len(schema._errors))
+    self.assertEquals('cannot be less than 4 characters',
+      schema._errors['min_field'][0])
+    self.assertEquals('cannot be greater than 2 characters',
+      schema._errors['max_field'][0])
+
   def test_regex_validator(self):
     class RegexSchema(rest.Schema):
       zip_code = rest.String(validators=[
