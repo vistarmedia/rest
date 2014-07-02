@@ -18,6 +18,15 @@ def number_range(min=None, max=None):
         return ['cannot be greater than %s' % str(max)]
   return test_range
 
+def length(min=None, max=None):
+  def test_len(value):
+    if value is not None:
+      if min is not None and len(value) < min:
+        return ['cannot be less than %s characters' % str(min)]
+      if max is not None and len(value) > max:
+        return ['cannot be greater than %s characters' % str(max)]
+  return test_len
+
 def url(value):
   if value:
     regex = r'^http(s)?://([^/:]+\.[a-z]{2,10}|' \
