@@ -4,6 +4,7 @@ from datetime import datetime
 from decimal import Decimal
 from unittest import TestCase
 from nose.tools import raises
+from nose.tools import assert_raises
 
 from rest import fields
 
@@ -106,6 +107,19 @@ class FieldTest(TestCase):
   def test_dollars_coercion(self):
     self.assertEquals(Decimal('1.10'), fields.Dollars().coerce('1.10'))
     self.assertEquals(Decimal('1.10'), fields.Dollars().coerce(1.10))
+
+  def test_list_coercion(self):
+    self.assertIn('1', fields.List().coerce(['1', '2', '3']))
+    self.assertIn('2', fields.List().coerce(['1', '2', '3']))
+    self.assertIn('3', fields.List().coerce(['1', '2', '3']))
+
+  def test_list_coercion_with_options_list(self):
+    list_coerce = fields.List(options=['bigdog', 'strodog']).coerce
+
+    assert_raises(ValueError, list_coerce, ['smalldog'])
+    assert_raises(ValueError, list_coerce, ['strodog', 'smalldog'])
+    self.assertIn('strodog', list_coerce(['strodog', 'bigdog']))
+    self.assertIn('bigdog', list_coerce(['strodog', 'bigdog']))
 
   def test_datetime_coercion(self):
     self.assertEquals(datetime(2012, 4, 20, 16, 20, 0, 0),
