@@ -192,8 +192,17 @@ class Dollars(Field):
 
 
 class List(Field):
+  def __init__(self, value=None, validators=[], default=None, options=[]):
+    self.options = options
+    super(List, self).__init__(value, validators, default)
+
   def coerce(self, value):
-    return list(value)
+    items = list(value)
+    if self.options:
+      for item in items:
+        if item not in self.options:
+          raise ValueError('Invalid selection %s' % item)
+    return items
 
 
 class TruthyOnlyList(Field):
