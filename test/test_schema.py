@@ -63,6 +63,19 @@ class TestSchema(TestCase):
     self.assertEquals(1, len(schema._errors))
     self.assertEquals(['not a valid Zip'], schema._errors['zip_code'])
 
+  def test_exclusive_list_validator(self):
+    class ExclusiveValuesSchema(rest.Schema):
+      dogs = rest.List(validators=[rest.exclusive_list(['strodog', 'bigdog'])])
+
+    schema = ExclusiveValuesSchema()
+    self.assertTrue(schema({'dogs': ['strodog']}))
+    self.assertFalse(schema({'dogs': ['smalldog']}))
+    self.assertFalse(schema({'dogs': ['strodog', 'smalldog']}))
+    self.assertTrue(schema({'dogs': ['bigdog', 'strodog']}))
+
+    schema({'dogs': ['strodog', 'smalldog', 'yapdog']})
+    self.assertIn('Invalid selection smalldog', schema._errors['dogs'])
+
   def test_serialized_set(self):
     schema = FriendSchema()
 

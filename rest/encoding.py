@@ -35,6 +35,7 @@ class JsonEncoding(object):
       el.pop('__namespace__')
     return el
 
+
 class XmlEncoding(object):
   def __init__(self, namespace):
     self.namespace = namespace
@@ -115,6 +116,7 @@ class XmlEncoding(object):
       else:
         d[t.tag] = text
     return d
+
 
 def encoder(request, namespace='body'):
   best = request.accept_mimetypes.best_match([

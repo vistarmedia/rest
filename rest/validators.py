@@ -48,3 +48,14 @@ def multiple_choice(choices):
       return ['Invalid selection %s' % value]
 
   return assert_choice_in_choices
+
+def exclusive_list(value_list):
+  '''
+  a list containing any value not given in `value_list` will fail validation
+  '''
+  def assert_in_list(given_list):
+    for value in given_list:
+      if value not in value_list:
+        return ['Invalid selection %s' % value]
+
+  return assert_in_list
