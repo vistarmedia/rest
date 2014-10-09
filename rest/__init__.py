@@ -4,7 +4,6 @@ import unicodecsv as csv
 from exceptions import ValueError
 
 from flask import Response
-from flask import request
 from functools import wraps
 from StringIO import StringIO
 from werkzeug.wrappers import BaseResponse
@@ -97,7 +96,7 @@ def csv_upload(schema, fieldnames=None):
   def decorator(view):
     @wraps(view)
     def view_wrapper(*args, **kwargs):
-      body = request.files['file'].stream
+      body = flask.request.files['file'].stream
       rows = (_check_csv_schema(schema, row, i) \
           for i, row in enumerate(csv.DictReader(body, fieldnames=fieldnames),
             start=1))
