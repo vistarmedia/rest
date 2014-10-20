@@ -177,6 +177,10 @@ class Float(Field):
     except:
       raise ValueError("Invalid float")
 
+  def get(self):
+    val = super(Float, self).get()
+    if val is not None: return float(val)
+
 
 class Dollars(Field):
   def coerce(self, value):
