@@ -2,6 +2,7 @@ from datetime import datetime
 from decimal import Decimal
 from locale import atof
 from locale import atoi
+from numbers import Number
 
 
 class Field(object):
@@ -156,6 +157,19 @@ class Int(Field):
   def coerce(self, value):
     if value == '':
       value = '0'
+    try:
+      if isinstance(value, basestring):
+        return atoi(value)
+      else:
+        return int(value)
+    except:
+      raise ValueError("Invalid integer")
+
+
+class NoneInt(Field):
+  def coerce(self, value):
+    if not value and not isinstance(value, Number):
+      return None
     try:
       if isinstance(value, basestring):
         return atoi(value)
