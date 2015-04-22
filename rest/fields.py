@@ -165,6 +165,19 @@ class Int(Field):
       raise ValueError("Invalid integer")
 
 
+class NoneInt(Field):
+  def coerce(self, value):
+    if value == '' or value is None:
+      return None
+    try:
+      if isinstance(value, basestring):
+        return atoi(value)
+      else:
+        return int(value)
+    except:
+      raise ValueError("Invalid integer")
+
+
 class Float(Field):
   def coerce(self, value):
     if value == '':
