@@ -95,6 +95,18 @@ class FieldTest(TestCase):
     self.assertEquals(0, fields.Int().coerce(''))
     self.assertEquals(1000000, fields.Int().coerce('1,000,000'))
 
+  def test_none_int_coercion(self):
+    locale.setlocale(locale.LC_ALL, 'en_US.UTF8')
+    self.assertEquals(4, fields.NoneInt().coerce(Decimal(4.2)))
+    self.assertEquals(4, fields.NoneInt().coerce(float(4.2)))
+    self.assertEquals(4, fields.NoneInt().coerce(4))
+    self.assertEquals(4, fields.NoneInt().coerce(u'4'))
+    self.assertEquals(4, fields.NoneInt().coerce('4'))
+    self.assertEquals(0, fields.NoneInt().coerce('0'))
+    self.assertEquals(None, fields.NoneInt().coerce(''))
+    self.assertEquals(None, fields.NoneInt().coerce(None))
+    self.assertEquals(1000000, fields.NoneInt().coerce('1,000,000'))
+
   def test_float_coercion(self):
     locale.setlocale(locale.LC_ALL, 'en_US.UTF8')
     self.assertEquals(4.02, fields.Float().coerce(Decimal(4.02)))
