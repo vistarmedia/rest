@@ -19,6 +19,7 @@ from fields import Dollars
 from fields import Float
 from fields import Int
 from fields import List
+from fields import NoneInt
 from fields import NoneString
 from fields import ReadOnly
 from fields import String
