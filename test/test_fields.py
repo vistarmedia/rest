@@ -58,6 +58,9 @@ class FieldTest(TestCase):
   def test_string_coercion_with_trim_to(self):
     self.assertEquals('19103', fields.String(trim_to=5).coerce('19103-1212'))
 
+  def test_none_string_coercion_with_trim_to(self):
+    self.assertEquals('666', fields.NoneString(trim_to=3).coerce('666123'))
+
   def test_boolean_coercion(self):
     self.assertTrue(fields.Bool().coerce(True))
     self.assertFalse(fields.Bool().coerce(False))

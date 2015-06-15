@@ -125,13 +125,13 @@ class String(Field):
     return unicode(value)
 
 
-class NoneString(Field):
+class NoneString(String):
   """
   This is a field that should have a value of None when passed an empty string
   """
   def coerce(self, value):
     if value:
-      return str(value)
+      return super(NoneString, self).coerce(value)
     else:
       return None
 
