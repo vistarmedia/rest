@@ -51,7 +51,9 @@ class Field(object):
   def set(self, value):
     if value is None:
       return
+    return self._set(value)
 
+  def _set(self, value):
     try:
       coerced = self.coerce(value)
       if self._has_set:
@@ -62,7 +64,6 @@ class Field(object):
       return v.args
     except:
       return ['Invalid data']
-
 
   def coerce(self, value):
     return value
@@ -135,6 +136,9 @@ class NoneString(String):
     else:
       return None
 
+  def set(self, value):
+    return self._set(value)
+
 
 class Bool(Field):
   def coerce(self, value):
@@ -176,6 +180,9 @@ class NoneInt(Field):
         return int(value)
     except:
       raise ValueError("Invalid integer")
+
+  def set(self, value):
+    return self._set(value)
 
 
 class Float(Field):
