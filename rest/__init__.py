@@ -165,9 +165,9 @@ def json_csv_upload(fieldnames):
     return view_wrapper
   return decorator
 
-def error(msg):
+def error(msg, status=400):
   codec = encoder(flask.request, 'errors')
-  response = Response(status=400)
+  response = Response(status=status)
 
   if isinstance(msg, dict):
     response.data = codec.encode(msg)
