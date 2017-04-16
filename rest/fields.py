@@ -234,6 +234,11 @@ class TruthyOnlyList(Field):
     return [v for v in value if v]
 
 
+class TruthyOnlyList(Field):
+  def coerce(self, value):
+    return [v for v in value if v]
+
+
 class Dict(Field):
   def coerce(self, value):
     return dict(value)
