@@ -48,3 +48,10 @@ def multiple_choice(choices):
       return ['Invalid selection %s' % value]
 
   return assert_choice_in_choices
+
+def non_falsy_list(value):
+  non_empty = nonempty(value)
+  if non_empty: return non_empty
+
+  for e in value:
+    if not e: return ['list must contain values']
