@@ -3,6 +3,9 @@ from decimal import Decimal
 from locale import atof
 from locale import atoi
 
+from rest.validators import email
+from rest.validators import url
+
 
 class Field(object):
   """
@@ -259,7 +262,6 @@ class DateTime(Field):
 
 class URL(Field):
   def __init__(self, value=None, validators=[], default=None):
-    from rest.validators import url
     if url not in validators:
       validators.append(url)
     super(URL, self).__init__(value, validators, default)
@@ -275,3 +277,9 @@ class URL(Field):
     return url.replace('|', '%7C')\
               .replace(';', '%3B')
 
+
+class Email(String):
+  def __init__(self, value=None, validators=[], default=None):
+    if email not in validators:
+      validators.append(email)
+    super(Email, self).__init__(value, validators, default)
