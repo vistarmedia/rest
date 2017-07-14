@@ -16,6 +16,7 @@ from fields import Bool
 from fields import DateTime
 from fields import Dict
 from fields import Dollars
+from fields import Email
 from fields import Float
 from fields import Int
 from fields import List
@@ -29,6 +30,7 @@ from fields import URL
 from fields import WriteOnce
 from fields import WriteOnly
 
+from validators import email
 from validators import length
 from validators import multiple_choice
 from validators import nonempty

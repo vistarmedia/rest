@@ -27,19 +27,19 @@ def length(min=None, max=None):
         return ['cannot be greater than %s characters' % str(max)]
   return test_len
 
-def url(value):
-  if value:
-    regex = r'^http(s)?://([^/:]+\.[a-z]{2,10}|' \
-      + r'([0-9]{1,3}\.){3}[0-9]{1,3})(:[0-9]+)?(\/.*)?$'
-    if not re.match(regex, value):
-      return ['must be a valid HTTP URL']
-
 def regex(expr, msg):
   def contains_regex(value):
     if value and not re.search(expr, value):
       return [msg]
 
   return contains_regex
+
+url = regex(r'^http(s)?://([^/:]+\.[a-z]{2,10}|' + \
+              r'([0-9]{1,3}\.){3}[0-9]{1,3})(:[0-9]+)?(\/.*)?$',
+            'must be a valid HTTP URL')
+
+email = regex(r'(^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$)',
+              'must be a valid email')
 
 def multiple_choice(choices):
 

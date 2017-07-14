@@ -168,3 +168,11 @@ class FieldTest(TestCase):
     list_with_some_falsies = ['', 'dogs', 'food', '', 'crime', None, 5]
     self.assertEquals(4,
         len(fields.TruthyOnlyList().coerce(list_with_some_falsies)))
+
+  def test_email_validation(self):
+    error = ['must be a valid email']
+    self.assertEquals(error, fields.Email('bademail').validate())
+    self.assertEquals(error, fields.Email('noat.com').validate())
+    self.assertEquals(error, fields.Email('notld@somewhere').validate())
+
+    self.assertEquals([], fields.Email('valid@email.com').validate())
