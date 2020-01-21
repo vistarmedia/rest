@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 from datetime import datetime
 from decimal import Decimal
 from locale import atof
@@ -5,6 +6,7 @@ from locale import atoi
 
 from rest.validators import email
 from rest.validators import url
+import six
 
 
 class Field(object):
@@ -125,8 +127,8 @@ class String(Field):
 
   def coerce(self, value):
     if self.trim_to:
-      return unicode(value)[:self.trim_to]
-    return unicode(value)
+      return six.text_type(value)[:self.trim_to]
+    return six.text_type(value)
 
 
 class NoneString(String):
@@ -164,7 +166,7 @@ class Int(Field):
     if value == '':
       value = '0'
     try:
-      if isinstance(value, basestring):
+      if isinstance(value, six.string_types):
         return atoi(value)
       else:
         return int(value)
@@ -177,7 +179,7 @@ class NoneInt(Field):
     if value == '' or value is None:
       return None
     try:
-      if isinstance(value, basestring):
+      if isinstance(value, six.string_types):
         return atoi(value)
       else:
         return int(value)
@@ -193,7 +195,7 @@ class Float(Field):
     if value == '':
       value = '0.0'
     try:
-      if isinstance(value, basestring):
+      if isinstance(value, six.string_types):
         return atof(value)
       else:
         return float(value)

@@ -1,5 +1,6 @@
+from __future__ import absolute_import
 from flask import Flask
-from flask.ext.testing import TestCase
+from flask_testing import TestCase
 
 app = Flask(__name__)
 

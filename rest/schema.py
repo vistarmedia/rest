@@ -4,7 +4,7 @@ class Schema(object):
   def combined_errors(self, *args):
     errors = []
     for schema in args:
-      errors.extend(schema._errors.items())
+      errors.extend(list(schema._errors.items()))
     return dict(errors)
 
   def __init__(self, **kwargs):

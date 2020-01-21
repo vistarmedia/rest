@@ -6,14 +6,14 @@ setup(
   packages  = ['rest'],
 
   install_requires = [
-    'Flask         == 0.10',
-    'unicodecsv    == 0.9.4',
+    'Flask         == 1.0.4',
+    'unicodecsv    == 0.14.1',
   ],
 
   test_suite = 'nose.collector',
 
   tests_require = [
-    'Flask-Testing == 0.4.1',
-    'nose          == 1.3.0',
+    'Flask-Testing == 0.7.1',
+    'nose          == 1.3.7',
   ]
 )

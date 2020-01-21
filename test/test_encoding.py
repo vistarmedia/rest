@@ -1,9 +1,10 @@
+from __future__ import absolute_import
 import json
 import unittest
 
 from flask import Flask
 from flask import request
-from flask.ext.testing import TestCase
+from flask_testing import TestCase
 from werkzeug.datastructures import Headers
 
 import rest
@@ -103,10 +104,10 @@ class TestEncoding(TestCase):
     return self.app
 
   def test_simple_json_echo(self):
-    resp = self.client.post('/echo', data='{"hello": "world"}')
+    resp = self.client.post('/echo', data=json.dumps({'hello': 'world'}))
 
     self.assertEquals({'hello': 'world'}, self.last_payload)
-    self.assertEquals('{"hello": "world"}', resp.data)
+    self.assertEquals('{"hello": "world"}', resp.get_data(as_text=True))
 
   def test_simple_xml_echo(self):
     resp = self.client.post('/echo',
@@ -117,7 +118,7 @@ class TestEncoding(TestCase):
       ''',
       headers = self._accept('text/xml'))
 
-    xml = resp.data.split('\n')[1]
+    xml = resp.get_data(as_text=True).split('\n')[1]
     self.assert200(resp)
     self.assertEquals({'hello': 'world'}, self.last_payload)
     self.assertEquals('<body><hello>world</hello></body>', xml)
@@ -130,8 +131,8 @@ class TestEncoding(TestCase):
         </body>
       ''',
       headers = self._accept('text/xml'))
-    preamble, _ = resp.data.split('\n')
-    self.assertEquals("<?xml version='1.0' encoding='UTF-8'?>", preamble)
+    preamble = resp.get_data(as_text=True).split('\n')[0]
+    self.assertEquals("<?xml version='1.0' encoding='unicode'?>", preamble)
 
   def test_schema_name_returned_for_xml(self):
     class UserSchema(rest.Schema):
@@ -144,21 +145,21 @@ class TestEncoding(TestCase):
       return UserSchema(id='12', name='Frank')
 
     resp = self.client.get('/userz', headers=self._accept('text/xml'))
-    xml = resp.data.split('\n')[1]
+    xml = resp.get_data(as_text=True).split('\n')[1]
     self.assertTrue(xml.startswith('<User>'))
     self.assertTrue(xml.endswith('</User>'))
 
   def test_errors_in_json(self):
     resp = self.client.get('/error')
     self.assert400(resp)
-    body = json.loads(resp.data)
+    body = json.loads(resp.get_data(as_text=True))
     self.assertEquals(['too hard', 'too soft'], body['motown_philly'])
     self.assertEquals(['field is required'], body['name'])
 
   def test_errors_in_xml(self):
     resp = self.client.get('/error', headers=self._accept('text/xml'))
     self.assert400(resp)
-    xml = resp.data.split('\n')[1]
+    xml = resp.get_data(as_text=True).split('\n')[1]
     self.assertTrue(xml.startswith('<errors>'))
     self.assertTrue(xml.endswith('</errors>'))
     self.assertTrue('<motown_philly>too hard</motown_philly>' in xml)

@@ -1,8 +1,11 @@
+from __future__ import absolute_import
 import json
 
 from collections import defaultdict
 from decimal import Decimal
 from xml.etree import ElementTree
+import six
+from six.moves import map
 
 
 # This class is for backwards compatability with Python 2.6
@@ -20,7 +23,7 @@ class JsonEncoding(object):
 
   def decode(self, request):
     if request.data:
-      return json.loads(request.data)
+      return json.loads(request.get_data(as_text=True))
     else:
       return {}
 
@@ -50,7 +53,8 @@ class XmlEncoding(object):
       root = self.encode_list(dct)
     else:
       root = self.encode_dict(dct)
-    return ElementTree.tostring(root, encoding='UTF-8')
+    return "<?xml version='1.0' encoding='unicode'?>\n" + \
+        ElementTree.tostring(root, encoding='unicode')
 
   def encode_dict(self, dct):
     return self.dict_to_element_tree(dct)
@@ -76,7 +80,7 @@ class XmlEncoding(object):
       namespace = self.namespace
     root = ElementTree.Element(namespace)
     for k, vs in dct.items():
-      if not hasattr(vs, '__iter__'):
+      if not hasattr(vs, '__iter__') or isinstance(vs, str):
         vs = [vs]
 
       for v in vs:
@@ -99,15 +103,15 @@ class XmlEncoding(object):
     if children:
       dd = defaultdict(list)
       for dc in map(self.etree_to_dict, children):
-        for k, v in dc.iteritems():
+        for k, v in six.iteritems(dc):
           dd[k].append(v)
 
       values = {}
-      for k, vs in dd.iteritems():
+      for k, vs in six.iteritems(dd):
         values[k] = vs[0] if len(vs) == 1 else vs
       d = {t.tag: values}
     if t.attrib:
-      d[t.tag].update(('@' + k, v) for k, v in t.attrib.iteritems())
+      d[t.tag].update(('@' + k, v) for k, v in six.iteritems(t.attrib))
     if t.text:
       text = t.text.strip()
       if children or t.attrib:
