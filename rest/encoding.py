@@ -1,4 +1,5 @@
 from __future__ import absolute_import
+import sys
 import json
 
 from collections import defaultdict
@@ -53,8 +54,11 @@ class XmlEncoding(object):
       root = self.encode_list(dct)
     else:
       root = self.encode_dict(dct)
-    return "<?xml version='1.0' encoding='unicode'?>\n" + \
-        ElementTree.tostring(root, encoding='unicode')
+    if sys.version_info[0] >= 3:
+      return b"<?xml version='1.0' encoding='UTF-8'?>\n" + \
+          ElementTree.tostring(root, encoding='UTF-8')
+    else:
+      return ElementTree.tostring(root, encoding='UTF-8')
 
   def encode_dict(self, dct):
     return self.dict_to_element_tree(dct)

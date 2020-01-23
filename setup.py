@@ -8,6 +8,7 @@ setup(
   install_requires = [
     'Flask         == 1.0.4',
     'unicodecsv    == 0.14.1',
+    'six           == 1.14.0'
   ],
 
   test_suite = 'nose.collector',

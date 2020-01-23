@@ -49,7 +49,7 @@ class TestXmlEncoding(unittest.TestCase):
       'age':      23,
       'name':     'steve',
       'friends':  ['bob', 'frank']
-    })
+    }).decode()
 
     self.assertTrue('<friends>bob</friends>' in xml)
     self.assertTrue('<friends>frank</friends>' in xml)
@@ -59,14 +59,14 @@ class TestXmlEncoding(unittest.TestCase):
     xml = self.codec.encode({
       'name':     'steve',
       'income':   None,
-    })
+    }).decode()
 
     self.assertTrue('None' not in xml)
     self.assertTrue('<name>steve</name>' in xml)
     self.assertTrue('<income />' in xml)
 
   def test_boolean_value(self):
-    xml = self.codec.encode({'cool': True})
+    xml = self.codec.encode({'cool': True}).decode()
     self.assertTrue('<cool>true</cool>' in xml)
 
   def test_json_excludes_namespace(self):
@@ -132,7 +132,7 @@ class TestEncoding(TestCase):
       ''',
       headers = self._accept('text/xml'))
     preamble = resp.get_data(as_text=True).split('\n')[0]
-    self.assertEquals("<?xml version='1.0' encoding='unicode'?>", preamble)
+    self.assertEquals("<?xml version='1.0' encoding='UTF-8'?>", preamble)
 
   def test_schema_name_returned_for_xml(self):
     class UserSchema(rest.Schema):

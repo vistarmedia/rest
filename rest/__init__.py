@@ -1,10 +1,10 @@
 from __future__ import absolute_import
 import flask
 import unicodecsv as csv
+import six
 
 from flask import Response
 from functools import wraps
-from io import BytesIO
 from werkzeug.wrappers import BaseResponse
 
 from .schema import Schema
@@ -138,7 +138,7 @@ def json_csv_upload(fieldnames):
     return (obj, row_number, errors)
 
   def csv_reader(byte_string):
-    csv_data   = BytesIO(byte_string)
+    csv_data   = six.BytesIO(byte_string)
     csv_reader = csv.reader(csv_data)
 
     for i, row in enumerate(csv_reader, start=1):

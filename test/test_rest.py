@@ -1,7 +1,5 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import
-from io import StringIO
-from io import BytesIO
 
 from flask import Flask
 from flask_testing import TestCase
@@ -123,7 +121,8 @@ class TestCSVUpload(TestCase):
       "'strodog,kibble,65"
 
     resp = self.client.post('/csv', data={
-      'file': (BytesIO(data.encode()), 'test.csv')}, headers=self.csv_headers)
+      'file': (six.BytesIO(data.encode('utf-8')), 'test.csv')},
+      headers=self.csv_headers)
 
     self.assert400(resp)
     body = loads(resp.get_data(as_text=True))
@@ -142,7 +141,8 @@ class TestCSVUpload(TestCase):
       "'strodog,kibble,65"
 
     resp = self.client.post('/csv', data={
-      'file': (BytesIO(data.encode()), 'test.csv')}, headers=self.csv_headers)
+      'file': (six.BytesIO(data.encode('utf-8')), 'test.csv')},
+      headers=self.csv_headers)
 
     self.assert400(resp)
     body = loads(resp.get_data(as_text=True))
@@ -157,7 +157,7 @@ class TestCSVUpload(TestCase):
       "'strodog,kibble,65"
 
     resp = self.client.post('/csv', data={
-      'file': (BytesIO(data.encode()), 'test.csv')}, headers=self.csv_headers)
+      'file': (six.BytesIO(data.encode()), 'test.csv')}, headers=self.csv_headers)
 
     self.assert_status(resp, 201)
 
@@ -173,7 +173,7 @@ class TestCSVUpload(TestCase):
       "'strodog,kibble,65\n"
 
     resp = self.client.post('/csv', data={
-      'file': (BytesIO(data.encode()), 'test.csv')}, headers=self.csv_headers)
+      'file': (six.BytesIO(data.encode()), 'test.csv')}, headers=self.csv_headers)
 
     self.assert_status(resp, 201)
 
@@ -187,13 +187,13 @@ class TestCSVUpload(TestCase):
     """
     it should be able to handle unicode characters
     """
-    data = "dog_type,food,pounds\n" \
-      "foxes,cured meats,3200\n" \
-      "H\u00e4nsel,pies,1500\n" \
-      "ni\u00f1o,foods,43\n"
+    data = u"dog_type,food,pounds\n" \
+      u"foxes,cured meats,3200\n" \
+      u"H\u00e4nsel,pies,1500\n" \
+      u"ni\u00f1o,foods,43\n"
 
     resp = self.client.post('/csv',
-      data={'file': (BytesIO(data.encode()), 'test.csv')},
+      data={'file': (six.BytesIO(data.encode('utf-8')), 'test.csv')},
       headers=self.csv_headers)
 
     self.assert_status(resp, 201)
@@ -228,9 +228,9 @@ class TestCSVUpload(TestCase):
       'content-type': 'text/json'
     }
 
-    data = "foxes,cured meats,3200\n" \
-      "H\u00e4nsel,pies,1500\n" \
-      "ni\u00f1o,foods,43\n"
+    data = u"foxes,cured meats,3200\n" \
+      u"H\u00e4nsel,pies,1500\n" \
+      u"ni\u00f1o,foods,43\n"
 
     o = {
       'csv': data
