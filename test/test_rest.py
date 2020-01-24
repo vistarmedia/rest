@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
-from StringIO import StringIO
+from __future__ import absolute_import
 
 from flask import Flask
-from flask.ext.testing import TestCase
+from flask_testing import TestCase
 from json import dumps
 from json import loads
 from nose.plugins.skip import SkipTest
@@ -12,6 +12,7 @@ import rest
 from test import ViewTestCase
 
 from rest.schema import Schema
+import six
 
 
 class TestRest(ViewTestCase):
@@ -40,7 +41,7 @@ class TestSimpleApp(TestCase):
     resp = self.client.post('/post', data=body)
     self.assert200(resp)
 
-    self.assertEquals(u'Nina\u2019s', loads(resp.data)['hi'])
+    self.assertEquals(u'Nina\u2019s', loads(resp.get_data(as_text=True))['hi'])
     self.assertEquals(u'Nina\u2019s', self.last_post['hi'])
 
   def test_unicode_without_encoding_header(self):
@@ -48,7 +49,7 @@ class TestSimpleApp(TestCase):
     body = u'{"hi": "L\u2019Acadie pour Elle"}'
     resp = self.client.post('/post', data=body)
     self.assertEquals(400, resp.status_code)
-    body = loads(resp.data)
+    body = loads(resp.get_data(as_text=True))
     self.assertEquals({
       'client': ['Expecting property name: line 1 column 1 (char 1)']
     }, body)
@@ -120,10 +121,11 @@ class TestCSVUpload(TestCase):
       "'strodog,kibble,65"
 
     resp = self.client.post('/csv', data={
-      'file': (StringIO(data), 'test.csv')}, headers=self.csv_headers)
+      'file': (six.BytesIO(data.encode('utf-8')), 'test.csv')},
+      headers=self.csv_headers)
 
     self.assert400(resp)
-    body = loads(resp.data)
+    body = loads(resp.get_data(as_text=True))
 
     self.assertIn('cannot be empty', body['food'])
 
@@ -139,10 +141,11 @@ class TestCSVUpload(TestCase):
       "'strodog,kibble,65"
 
     resp = self.client.post('/csv', data={
-      'file': (StringIO(data), 'test.csv')}, headers=self.csv_headers)
+      'file': (six.BytesIO(data.encode('utf-8')), 'test.csv')},
+      headers=self.csv_headers)
 
     self.assert400(resp)
-    body = loads(resp.data)
+    body = loads(resp.get_data(as_text=True))
 
     self.assertIn('cannot be empty', body['food'])
 
@@ -154,7 +157,7 @@ class TestCSVUpload(TestCase):
       "'strodog,kibble,65"
 
     resp = self.client.post('/csv', data={
-      'file': (StringIO(data), 'test.csv')}, headers=self.csv_headers)
+      'file': (six.BytesIO(data.encode()), 'test.csv')}, headers=self.csv_headers)
 
     self.assert_status(resp, 201)
 
@@ -170,7 +173,7 @@ class TestCSVUpload(TestCase):
       "'strodog,kibble,65\n"
 
     resp = self.client.post('/csv', data={
-      'file': (StringIO(data), 'test.csv')}, headers=self.csv_headers)
+      'file': (six.BytesIO(data.encode()), 'test.csv')}, headers=self.csv_headers)
 
     self.assert_status(resp, 201)
 
@@ -184,13 +187,13 @@ class TestCSVUpload(TestCase):
     """
     it should be able to handle unicode characters
     """
-    data = "dog_type,food,pounds\n" \
-      "foxes,cured meats,3200\n" \
-      "H\xc3\xa4nsel,pies,1500\n" \
-      "ni\xc3\xb1o,foods,43\n"
+    data = u"dog_type,food,pounds\n" \
+      u"foxes,cured meats,3200\n" \
+      u"H\u00e4nsel,pies,1500\n" \
+      u"ni\u00f1o,foods,43\n"
 
     resp = self.client.post('/csv',
-      data={'file': (StringIO(data), 'test.csv')},
+      data={'file': (six.BytesIO(data.encode('utf-8')), 'test.csv')},
       headers=self.csv_headers)
 
     self.assert_status(resp, 201)
@@ -213,8 +216,7 @@ class TestCSVUpload(TestCase):
 
     resp = self.client.post('/csv_json/h/f', data=dumps(o), headers=headers)
     self.assert400(resp)
-
-    body = loads(resp.data)
+    body = loads(resp.get_data(as_text=True))
 
     self.assertIn('"csv" key cannot be empty', body['client'])
 
@@ -226,9 +228,9 @@ class TestCSVUpload(TestCase):
       'content-type': 'text/json'
     }
 
-    data = "foxes,cured meats,3200\n" \
-      "H\xc3\xa4nsel,pies,1500\n" \
-      "ni\xc3\xb1o,foods,43\n"
+    data = u"foxes,cured meats,3200\n" \
+      u"H\u00e4nsel,pies,1500\n" \
+      u"ni\u00f1o,foods,43\n"
 
     o = {
       'csv': data
@@ -238,7 +240,7 @@ class TestCSVUpload(TestCase):
         data=dumps(o), headers=headers)
     self.assert_status(resp, 201)
 
-    body = loads(resp.data)
+    body = loads(resp.get_data(as_text=True))
 
     names = [d.get('dog_type') for d in body]
 
@@ -257,7 +259,7 @@ class TestCSVUpload(TestCase):
       '''"slow horses",grass food,33'''
 
     o = {
-      'csv': unicode(data)
+      'csv': six.text_type(data)
     }
 
     fieldnames = ('name','feed','pounds',)
