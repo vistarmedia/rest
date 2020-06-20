@@ -40,6 +40,12 @@ class FieldTest(TestCase):
 
     field.set('bye')
 
+  @raises(ValueError)
+  def test_set_none_on_field(self):
+    field = fields.ReadOnly(fields.String('hi'))
+
+    field.set(None)
+
   @raises(Exception)
   def test_write_only(self):
     field = fields.WriteOnly(fields.String('hi'))
