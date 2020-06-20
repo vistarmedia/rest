@@ -55,7 +55,7 @@ class Field(object):
 
   def set(self, value):
     if value is None:
-      return
+      raise ValueError('Invalid value %s' % value)
     return self._set(value)
 
   def _set(self, value):
